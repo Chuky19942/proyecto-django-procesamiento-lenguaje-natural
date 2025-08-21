@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Inicio{% endblock %}
+{% block nav_home %}active{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xl-8 col-lg-9">
+      <div class="card p-4">
+        <h3 class="mb-3">Bienvenido 👋</h3>
+        <p class="text-secondary">Usa el menú lateral para subir un archivo y visualizar el histograma de palabras.</p>
+        <div class="d-flex gap-2">
+          <a class="btn btn-primary" href="{% url 'analisis:upload' %}">Subir archivo</a>
+          <a class="btn btn-outline-light" href="{% url 'analisis:histograma' %}">Ver histograma</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

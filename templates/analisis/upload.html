@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Subir archivo{% endblock %}
+{% block nav_upload %}active{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xl-8 col-lg-9">
+      <div class="card p-4">
+        <h3 class="mb-3">Subir archivo de texto</h3>
+        <p class="text-secondary">Selecciona un archivo .txt o .csv para analizarlo.</p>
+        {% if messages %}
+          {% for m in messages %}
+            <div class="alert alert-{{ m.tags }} mb-3">{{ m }}</div>
+          {% endfor %}
+        {% endif %}
+        <form method="post" enctype="multipart/form-data" class="d-grid gap-3">
+          {% csrf_token %}
+          <div>
+            {{ form.file.label_tag }}
+            {{ form.file }}
+          </div>
+          <button type="submit" class="btn btn-primary">Subir y procesar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% if last_file %}
+  <div class="row mt-4">
+    <div class="col-xl-8 col-lg-9">
+      <div class="card p-4">
+        <h5 class="mb-2">Último archivo subido</h5>
+        <div class="text-secondary small">{{ last_file }}</div>
+        <a href="{% url 'analisis:histograma' %}" class="btn btn-outline-light mt-3">Ver histograma y tabla</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Histograma y tabla{% endblock %}
+{% block nav_hist %}active{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xl-10 col-lg-11">
+      <div class="card p-4">
+        <h3 class="mb-4">Histograma y tabla de frecuencias</h3>
+        {% if grafico_url %}
+          <img src="{{ grafico_url }}" class="img-fluid rounded mb-4" alt="Histograma">
+        {% endif %}
+        {% if tabla %}
+        <div class="table-responsive">
+          <table class="table table-dark table-hover table-bordered align-middle">
+            <thead><tr><th>Palabra</th><th>Frecuencia</th></tr></thead>
+            <tbody>
+              {% for palabra, frecuencia in tabla %}
+              <tr><td>{{ palabra }}</td><td>{{ frecuencia }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+          <div class="alert alert-warning">Aún no hay archivo procesado. Ve a <a href="{% url 'analisis:upload' %}">Subir archivo</a>.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
