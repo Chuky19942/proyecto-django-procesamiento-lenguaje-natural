@@ -1,0 +1,10 @@
+Instalar dependencias con pipenv
+
+* pipenv install
+Para activar el entorno virtual:
+
+* pipenv shell
+Migraciones y correr el servidor Django
+
+* python manage.py migrate
+* python manage.py runserver
