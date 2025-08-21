@@ -1,0 +1,146 @@
+import random
+import matplotlib.pyplot as plt
+
+# ===== CONFIGURACIÓN =====
+L = 11
+xmin, xmax = 2, 12
+random.seed(42)
+
+poblacion_binaria = [
+    "11101010100", "11000000010", "10001001001", "01011011110",
+    "01011101011", "01011010110", "01000010011", "00101111010",
+    "00101010101", "00011010101", "00010100101", "00010100010",
+    "00010010010", "00001010010", "00000011101"
+]
+
+# ===== FUNCIONES =====
+def binario_a_decimal(b):
+    return int(b, 2)
+
+def decimal_a_real(dec):
+    return xmin + (dec * (xmax - xmin)) / (2**L - 1)
+
+def funcion_adaptacion(x):
+    return (0.03107406 * x**3 +
+            0.44258699 * x**2 +
+            4.73355238 * x +
+            1.14756011)
+
+def crear_individuo(binario):
+    dec = binario_a_decimal(binario)
+    real_x = decimal_a_real(dec)
+    adaptado = funcion_adaptacion(real_x)
+    return {"binario": binario, "decimal": dec, "real_x": real_x, "adaptado": adaptado}
+
+def cruce_especial(ind1, ind2):
+    hijo1 = crear_individuo("0" + ind1["binario"][1:])
+    hijo2 = crear_individuo("0" + ind2["binario"][1:])
+    padre_mas_debil = ind1 if ind1["adaptado"] <= ind2["adaptado"] else ind2
+    mejor_hijo = hijo1 if hijo1["adaptado"] >= hijo2["adaptado"] else hijo2
+    return padre_mas_debil, mejor_hijo
+
+def mostrar_poblacion(poblacion, titulo):
+    print(f"\n=== {titulo} ===")
+    print(f"{'N':<3} {'INDIVIDUO':<12} {'DECIMAL':<8} {'REAL(X)':<10} {'ADAPTADO':<15}")
+    for j, ind in enumerate(poblacion, 1):
+        print(f"{j:<3} {ind['binario']:<12} {ind['decimal']:<8} "
+              f"{ind['real_x']:<10.3f} {ind['adaptado']:<15.3f}")
+
+def ejecutar_cruces(poblacion, cruces, generacion):
+    for i, (idx1, idx2) in enumerate(cruces, 1):
+        print(f"\n=== Cruce {i} (Gen{generacion}): {idx1+1} y {idx2+1} ===")
+        padre1, padre2 = poblacion[idx1], poblacion[idx2]
+        padre_reemplazo, hijo_nuevo = cruce_especial(padre1, padre2)
+
+        print(f"Padre reemplazado: {padre_reemplazo['binario']} → Nuevo hijo: {hijo_nuevo['binario']}")
+
+        for ind in poblacion:
+            if ind["binario"] == padre_reemplazo["binario"]:
+                ind.update(hijo_nuevo)
+
+def mutacion(poblacion, generacion):
+    print(f"\n=== MUTACIÓN MANUAL (Gen{generacion}) ===")
+    individuo_a_mutar = int(input(f"Elige número de individuo a mutar (1-{len(poblacion)}): "))
+    bit_a_mutar = int(input(f"Elige bit a cambiar (0-{L-1}): "))
+
+    ind = poblacion[individuo_a_mutar - 1]
+    lista_bin = list(ind["binario"])
+    lista_bin[bit_a_mutar] = '1' if lista_bin[bit_a_mutar] == '0' else '0'
+    nuevo_binario = "".join(lista_bin)
+
+    ind_actualizado = crear_individuo(nuevo_binario)
+    poblacion[individuo_a_mutar - 1] = ind_actualizado
+
+    print(f"Individuo {individuo_a_mutar} mutado en bit {bit_a_mutar}: {nuevo_binario}")
+
+    poblacion.sort(key=lambda x: x["adaptado"], reverse=True)
+    mostrar_poblacion(poblacion, f"Población final Gen{generacion}")
+    return poblacion
+
+
+# ===== GRÁFICA ACUMULADA =====
+colores = ["blue", "green", "red"]  # un color por generación
+def guardar_datos_grafica(poblacion, generacion, datos_generaciones):
+    # Guardamos TODOS los individuos (los 15)
+    x_vals = [ind["real_x"] for ind in poblacion]
+    y_vals = [ind["adaptado"] for ind in poblacion]
+    datos_generaciones[generacion] = (x_vals, y_vals)
+
+def graficar_todas_generaciones(datos_generaciones):
+    plt.figure(figsize=(8,6))
+    for gen, (x_vals, y_vals) in datos_generaciones.items():
+        # Dibujar línea que une los 15 individuos
+        plt.plot(x_vals, y_vals, marker="o", color=colores[gen-1], label=f"Generación {gen}")
+    plt.title("Comparación de las 3 generaciones (15 individuos cada una)")
+    plt.xlabel("Real(X)")
+    plt.ylabel("Adaptado")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+# ===== INICIALIZACIÓN =====
+poblacion = [crear_individuo(c) for c in poblacion_binaria]
+poblacion.sort(key=lambda x: x["adaptado"], reverse=True)
+mostrar_poblacion(poblacion, "Población inicial")
+
+datos_generaciones = {}
+
+
+# ===== CRUCES Y MUTACIONES =====
+def ejecutar_generacion(poblacion, cruces, generacion):
+    ejecutar_cruces(poblacion, cruces, generacion)
+
+    # 📊 Guardamos datos ANTES de mutar (TODOS los 15)
+    guardar_datos_grafica(poblacion, generacion, datos_generaciones)
+
+    poblacion = mutacion(poblacion, generacion)
+    return poblacion
+
+
+# GEN 1
+cruces_gen1 = [
+    (5, 14), (3, 7), (8, 9), (15, 1), (13, 9),
+    (7, 8), (9, 10), (5, 9), (15, 7), (9, 1)
+]
+cruces_gen1 = [(a-1, b-1) for a, b in cruces_gen1]
+poblacion = ejecutar_generacion(poblacion, cruces_gen1, 1)
+
+# GEN 2
+cruces_gen2 = [
+    (1, 2), (3, 4), (5, 6), (7, 8),
+    (2, 9), (4, 10), (6, 11), (12, 13), (14, 15), (1, 15)
+]
+cruces_gen2 = [(a-1, b-1) for a, b in cruces_gen2]
+poblacion = ejecutar_generacion(poblacion, cruces_gen2, 2)
+
+# GEN 3
+cruces_gen3 = [
+    (1, 3), (2, 4), (5, 7), (6, 8),
+    (9, 11), (10, 12), (13, 14), (2, 15), (4, 9), (7, 10)
+]
+cruces_gen3 = [(a-1, b-1) for a, b in cruces_gen3]
+poblacion = ejecutar_generacion(poblacion, cruces_gen3, 3)
+
+# 📊 Graficamos todo junto
+graficar_todas_generaciones(datos_generaciones)
