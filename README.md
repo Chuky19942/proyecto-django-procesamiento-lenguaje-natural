@@ -14,7 +14,7 @@
    python manage.py runserver
    ```
 4) URLs:
-   - `/` (mitad y mitad)
+   
    - `/lenguaje/` (subir .txt/.csv → tokens limpios + Top 30)
    - `/patrones/` (subir .txt → descarga transformado)
    - `/admin/` (ver documentos guardados)
